@@ -155,6 +155,37 @@ export default function App() {
   const [globalUseOutline, setGlobalUseOutline] = useState(true);
   const [globalOutlineWidth, setGlobalOutlineWidth] = useState(8);
 
+  // Custom Fonts State
+  const [customFonts, setCustomFonts] = useState<{name: string, family: string, url: string}[]>([]);
+  const fontInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFontUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const fontName = file.name.split('.')[0].replace(/[^a-zA-Z0-9]/g, '');
+      const familyName = `CustomFont_${fontName}_${Date.now()}`;
+      
+      const style = document.createElement('style');
+      style.textContent = `
+        @font-face {
+          font-family: '${familyName}';
+          src: url(${dataUrl});
+        }
+      `;
+      document.head.appendChild(style);
+
+      const newFont = { name: fontName, family: `'${familyName}'`, url: dataUrl };
+      setCustomFonts(prev => [...prev, newFont]);
+      updateGlobalSettings('font', `'${familyName}'`);
+    };
+    reader.readAsDataURL(file);
+    if (e.target) e.target.value = '';
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
 
@@ -519,6 +550,13 @@ export default function App() {
                 multiple 
                 {...{webkitdirectory: "", directory: ""} as any} 
               />
+              <input 
+                ref={fontInputRef}
+                type="file" 
+                accept=".ttf,.otf,.woff,.woff2"
+                onChange={handleFontUpload} 
+                className="hidden" 
+              />
 
               <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 space-y-6">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-2">Pengaturan Global</p>
@@ -540,18 +578,31 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase">Gaya Font</label>
+                  <div className="flex justify-between items-end">
+                    <label className="text-[10px] font-black text-slate-400 uppercase">Gaya Font</label>
+                    <button 
+                      onClick={() => fontInputRef.current?.click()}
+                      className="text-[8px] font-bold text-indigo-500 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-md transition-colors"
+                    >
+                      + FONT SENDIRI
+                    </button>
+                  </div>
                   <select 
                     value={globalFont}
                     onChange={(e) => updateGlobalSettings('font', e.target.value)}
                     className="w-full h-12 rounded-2xl border-2 border-white px-4 text-[11px] font-black outline-none bg-white shadow-sm appearance-none"
                   >
-                    <option value="'Fredoka', sans-serif">FREDOKA (Clean Cute)</option>
-                    <option value="'Bubblegum Sans', cursive">BUBBLEGUM SANS (Soft)</option>
-                    <option value="'DynaPuff', cursive">DYNAPUFF (Extra Puffy)</option>
-                    <option value="'Grandstander', cursive">GRANDSTANDER (Aesthetic)</option>
-                    <option value="'Titan One', cursive">TITAN ONE (Bold)</option>
-                    <option value="'Chewy', cursive">CHEWY (Playful)</option>
+                    {customFonts.length > 0 && <optgroup label="Font Custom">
+                      {customFonts.map(f => <option key={f.family} value={f.family}>{f.name.toUpperCase()}</option>)}
+                    </optgroup>}
+                    <optgroup label="Font Bawaan">
+                      <option value="'Fredoka', sans-serif">FREDOKA (Clean Cute)</option>
+                      <option value="'Bubblegum Sans', cursive">BUBBLEGUM SANS (Soft)</option>
+                      <option value="'DynaPuff', cursive">DYNAPUFF (Extra Puffy)</option>
+                      <option value="'Grandstander', cursive">GRANDSTANDER (Aesthetic)</option>
+                      <option value="'Titan One', cursive">TITAN ONE (Bold)</option>
+                      <option value="'Chewy', cursive">CHEWY (Playful)</option>
+                    </optgroup>
                   </select>
                 </div>
 
@@ -611,18 +662,31 @@ export default function App() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase">Gaya Font Khusus</label>
+                      <div className="flex justify-between items-end">
+                        <label className="text-[10px] font-black text-slate-400 uppercase">Gaya Font Khusus</label>
+                        <button 
+                          onClick={() => fontInputRef.current?.click()}
+                          className="text-[8px] font-bold text-indigo-500 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-md transition-colors"
+                        >
+                          + UP FONT
+                        </button>
+                      </div>
                       <select 
                         value={activeItem.fontFamily}
                         onChange={(e) => updateItem(activeItem.id, { fontFamily: e.target.value })}
-                        className="w-full h-12 rounded-2xl border-2 border-slate-200 px-4 text-[11px] font-black outline-none bg-white shadow-sm"
+                        className="w-full h-12 rounded-2xl border-2 border-slate-200 px-4 text-[11px] font-black outline-none bg-white shadow-sm appearance-none"
                       >
-                        <option value="'Fredoka', sans-serif">FREDOKA</option>
-                        <option value="'Bubblegum Sans', cursive">BUBBLEGUM</option>
-                        <option value="'DynaPuff', cursive">DYNAPUFF</option>
-                        <option value="'Grandstander', cursive">GRANDSTANDER</option>
-                        <option value="'Titan One', cursive">TITAN ONE</option>
-                        <option value="'Chewy', cursive">CHEWY</option>
+                        {customFonts.length > 0 && <optgroup label="Font Custom">
+                          {customFonts.map(f => <option key={f.family} value={f.family}>{f.name.toUpperCase()}</option>)}
+                        </optgroup>}
+                        <optgroup label="Font Bawaan">
+                          <option value="'Fredoka', sans-serif">FREDOKA</option>
+                          <option value="'Bubblegum Sans', cursive">BUBBLEGUM</option>
+                          <option value="'DynaPuff', cursive">DYNAPUFF</option>
+                          <option value="'Grandstander', cursive">GRANDSTANDER</option>
+                          <option value="'Titan One', cursive">TITAN ONE</option>
+                          <option value="'Chewy', cursive">CHEWY</option>
+                        </optgroup>
                       </select>
                     </div>
 
