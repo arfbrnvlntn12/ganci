@@ -342,14 +342,16 @@ export default function App() {
   };
 
   // --- Rendering High DPI ---
-  const exportPages = async () => {
+  const handleExportOrPrint = async (mode: 'download' | 'print') => {
     setIsLoading(true);
-    setLoadingText('Memulai Ekspor...');
+    setLoadingText(mode === 'print' ? 'Menyiapkan Cetak...' : 'Memulai Ekspor...');
     
     try {
       const pageCount = Math.ceil(items.length / SLOTS_PER_PAGE);
       const gutterX = (CANVAS_W - (COLS * UNIT_W)) / (COLS + 1);
       const gutterY = (CANVAS_H - (ROWS * UNIT_H)) / (ROWS + 1);
+
+      const generatedImages: string[] = [];
 
       for (let pIdx = 0; pIdx < pageCount; pIdx++) {
         setLoadingText(`Rakit Lembar ${pIdx + 1} / ${pageCount}...`);
@@ -408,12 +410,44 @@ export default function App() {
           }
         }
 
-        const link = document.createElement('a');
-        link.download = `Keychain_Lembar_${pIdx + 1}.jpg`;
-        link.href = canvas.toDataURL('image/jpeg', 0.95);
-        link.click();
-        await new Promise(r => setTimeout(r, 100));
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        if (mode === 'download') {
+          const link = document.createElement('a');
+          link.download = `Keychain_Lembar_${pIdx + 1}.jpg`;
+          link.href = dataUrl;
+          link.click();
+          await new Promise(r => setTimeout(r, 100));
+        } else {
+          generatedImages.push(dataUrl);
+        }
       }
+
+      if (mode === 'print') {
+         const printWindow = window.open('', '_blank');
+         if (printWindow) {
+           let html = `
+             <html>
+               <head>
+                 <title>Cetak Print-Flow</title>
+                 <style>
+                    body { margin: 0; padding: 0; background: #fff; }
+                    @page { size: A4; margin: 0; }
+                    img { width: 210mm; height: 297mm; display: block; break-after: page; page-break-after: always; margin: 0; padding: 0; box-sizing: border-box; }
+                 </style>
+               </head>
+               <body>
+                 ${generatedImages.map(url => `<img src="${url}" />`).join('')}
+                 <script>
+                    window.onload = function() { setTimeout(() => { window.print(); }, 500); }
+                 </script>
+               </body>
+             </html>
+           `;
+           printWindow.document.write(html);
+           printWindow.document.close();
+         }
+      }
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -730,20 +764,29 @@ export default function App() {
               className="absolute inset-y-0 left-0 bg-blue-500"
             />
           </div>
-          <div className="flex gap-2">
-            <button 
-              disabled={items.length === 0}
-              onClick={exportPages}
-              className="flex-1 bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-900/40 uppercase tracking-widest text-[9px] disabled:opacity-20 flex items-center justify-center gap-1"
-            >
-              Ekspor A4
-            </button>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <button 
+                disabled={items.length === 0}
+                onClick={() => handleExportOrPrint('download')}
+                className="flex-1 bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-blue-900/40 uppercase tracking-widest text-[9px] disabled:opacity-20 flex items-center justify-center gap-1"
+              >
+                Unduh JPG
+              </button>
+              <button 
+                disabled={items.length === 0}
+                onClick={() => handleExportOrPrint('print')}
+                className="flex-1 bg-purple-600 hover:bg-white hover:text-purple-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-900/40 uppercase tracking-widest text-[9px] disabled:opacity-20 flex items-center justify-center gap-1"
+              >
+                Cetak (Print)
+              </button>
+            </div>
             <button 
               disabled={items.length === 0}
               onClick={saveToDb}
-              className="flex-1 bg-emerald-600 hover:bg-white hover:text-emerald-600 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-emerald-900/40 uppercase tracking-widest text-[9px] disabled:opacity-20 flex items-center justify-center gap-1"
+              className="w-full bg-emerald-600 hover:bg-white hover:text-emerald-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/40 uppercase tracking-widest text-[9px] disabled:opacity-20 flex items-center justify-center gap-1"
             >
-              <Save size={14} /> Ke DB
+              <Save size={14} /> Simpan ke Cloud Database
             </button>
           </div>
         </div>
