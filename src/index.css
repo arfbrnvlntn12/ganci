@@ -1,0 +1,159 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Bubblegum+Sans&family=Chewy&family=DynaPuff:wght@700&family=Fredoka:wght@700&family=Grandstander:wght@900&family=Titan+One&family=Inter:wght@400;700;900&display=swap');
+
+@theme {
+  --font-bubblegum: "Bubblegum Sans", cursive;
+  --font-fredoka: "Fredoka", sans-serif;
+  --font-dynapuff: "DynaPuff", cursive;
+  --font-grandstander: "Grandstander", cursive;
+  --font-titan: "Titan One", cursive;
+  --font-chewy: "Chewy", cursive;
+  
+  /* Bento Palette */
+  --bg-app: #f4f5f7;
+  --sidebar-bg: #ffffff;
+  --accent-blue: #3b82f6;
+  --accent-yellow: #facc15;
+  --border-color: #e2e8f0;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+}
+
+:root {
+  --canvas-w: 2563px;
+  --canvas-h: 3508px;
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.page-frame {
+  background: white;
+  padding: 35px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 60px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  max-width: 1300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.unit-viewfinder {
+  position: relative;
+  background-color: #eef2f6; 
+  border-radius: 6px;
+  overflow: hidden; 
+  aspect-ratio: 2.9 / 5.0;
+  width: 100%;
+  cursor: grab;
+  user-select: none;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.unit-viewfinder:active {
+  cursor: grabbing;
+}
+
+.unit-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.unit-card.selected {
+  border: 2px solid var(--accent-blue);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background: #f8fafc;
+}
+
+.unit-card.selected::before {
+  content: 'SELECTED';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-blue);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.unit-card:hover:not(.selected) {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.unit-photo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  will-change: transform;
+  pointer-events: none;
+  max-width: none;
+  max-height: none;
+}
+
+.text-preview {
+  position: absolute;
+  white-space: pre-wrap;
+  text-align: center;
+  font-weight: 900;
+  line-height: 1.1;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: grab;
+  width: 85%;
+  -webkit-font-smoothing: antialiased;
+}
+
+.input-pill {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.tool-icon {
+  width: 24px;
+  height: 24px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
