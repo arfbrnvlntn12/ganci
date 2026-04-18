@@ -174,14 +174,36 @@ export default function App() {
     }
   };
 
-  const loadFromShareCode = () => {
+  const loadFromShareCode = async () => {
     if (!inputShareCode.trim()) return;
-    const target = projects.find(p => p.name.includes(inputShareCode.trim().toUpperCase()));
-    if (target) {
-      loadProject(target.id);
-      setInputShareCode('');
-    } else {
-      alert(`Kode ${inputShareCode} tidak ditemukan di Cloud.`);
+    
+    setIsLoading(true);
+    setLoadingText('Mencari Kode...');
+    
+    try {
+      // Fetch specifically for the requested code to avoid stale local state and ensure User 2 gets real-time sync
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .like('name', `%${inputShareCode.trim().toUpperCase()}%`);
+        
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        const found = data[0];
+        // Ensure the found project is in the local projects list
+        setProjects(prev => prev.some(p => p.id === found.id) ? prev : [found, ...prev]);
+        
+        await loadProject(found.id);
+        setInputShareCode('');
+      } else {
+        alert(`Kode ${inputShareCode} tidak ditemukan di Cloud Database.`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Terjadi kesalahan saat mencari kode di Server.");
+    } finally {
+      setIsLoading(false);
     }
   };
   
