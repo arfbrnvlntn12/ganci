@@ -1179,7 +1179,7 @@ function UnitCard({
               textTransform: 'uppercase',
               WebkitTextStroke: item.useOutline ? `${(item.outlineWidth * ratio)}px ${item.outlineColor}` : 'none',
               paintOrder: 'stroke fill',
-              transform: `rotate(${item.textRotation || 0}deg)`,
+              transform: `translate(-50%, -50%) rotate(${item.textRotation || 0}deg)`,
             }}
             onMouseDown={(e) => handleDragStart(e, 'text')}
             onTouchStart={(e) => handleDragStart(e, 'text')}
