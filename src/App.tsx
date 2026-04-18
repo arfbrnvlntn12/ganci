@@ -59,49 +59,64 @@ export default function App() {
     setIsLoading(true);
     setLoadingText('Menyimpan ke Database...');
     try {
+      // Step 1: Test koneksi dulu
+      const { error: pingErr } = await supabase.from('projects').select('id').limit(1);
+      if (pingErr) throw new Error(`Koneksi gagal: ${pingErr.message}`);
+
+      // Step 2: Buat atau gunakan project yang ada
       let projectId = currentProjectId;
       if (!projectId) {
         const { data, error } = await supabase.from('projects').insert([{ name: projectName }]).select();
-        if (error) throw error;
+        if (error) throw new Error(`Gagal buat project: ${error.message}`);
         projectId = data[0].id;
         setCurrentProjectId(projectId);
         await fetchProjects();
       }
 
-      // Delete existing
-      await supabase.from('keychain_items').delete().eq('project_id', projectId);
+      // Step 3: Hapus data lama
+      setLoadingText('Menghapus data lama...');
+      const { error: delErr } = await supabase.from('keychain_items').delete().eq('project_id', projectId);
+      if (delErr) throw new Error(`Gagal hapus data lama: ${delErr.message}`);
 
+      // Step 4: Simpan item satu per satu (menghindari batas ukuran payload besar)
       if (items.length > 0) {
-        const payload = items.map(item => ({
-          id: item.id,
-          project_id: projectId,
-          resi: item.resi,
-          name: item.name,
-          textColor: item.textColor,
-          outlineColor: item.outlineColor,
-          bgColor: item.bgColor,
-          fontFamily: item.fontFamily,
-          useOutline: item.useOutline,
-          outlineWidth: item.outlineWidth,
-          textScale: item.textScale,
-          textPosX: item.textPos.x,
-          textPosY: item.textPos.y,
-          transformX: item.transform.x,
-          transformY: item.transform.y,
-          transformScale: item.transform.scale,
-          transformRotate: item.transform.rotate,
-          imgW: item.imgW,
-          imgH: item.imgH,
-          imageData: item.imageData
-        }));
-        
-        const { error } = await supabase.from('keychain_items').insert(payload);
-        if (error) throw error;
+        for (let i = 0; i < items.length; i++) {
+          setLoadingText(`Menyimpan foto ${i + 1} / ${items.length}...`);
+          const item = items[i];
+          const row = {
+            id: item.id,
+            project_id: projectId,
+            resi: item.resi,
+            name: item.name,
+            textColor: item.textColor,
+            outlineColor: item.outlineColor,
+            bgColor: item.bgColor,
+            fontFamily: item.fontFamily,
+            useOutline: item.useOutline,
+            outlineWidth: item.outlineWidth,
+            textScale: item.textScale,
+            textPosX: item.textPos.x,
+            textPosY: item.textPos.y,
+            transformX: item.transform.x,
+            transformY: item.transform.y,
+            transformScale: item.transform.scale,
+            transformRotate: item.transform.rotate,
+            imgW: item.imgW,
+            imgH: item.imgH,
+            imageData: item.imageData
+          };
+          
+          const { error } = await supabase.from('keychain_items').insert([row]);
+          if (error) throw new Error(`Gagal simpan foto ${i + 1}: ${error.message}`);
+        }
       }
       
-    } catch (e) {
-      console.error(e);
-      alert('Gagal menyimpan');
+      setLoadingText('Berhasil disimpan!');
+      await new Promise(r => setTimeout(r, 800));
+      
+    } catch (e: any) {
+      console.error('SAVE ERROR:', e);
+      alert(`ERROR: ${e.message || e}`);
     } finally {
       setIsLoading(false);
     }
