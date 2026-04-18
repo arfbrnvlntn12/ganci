@@ -84,26 +84,26 @@ export default function App() {
           setLoadingText(`Menyimpan foto ${i + 1} / ${items.length}...`);
           const item = items[i];
           const row = {
-            id: item.id,
+            id: crypto.randomUUID(),
             project_id: projectId,
             resi: item.resi,
             name: item.name,
-            text_color: item.textColor,
-            outline_color: item.outlineColor,
-            bg_color: item.bgColor,
-            font_family: item.fontFamily,
-            use_outline: item.useOutline,
-            outline_width: item.outlineWidth,
-            text_scale: item.textScale,
-            text_pos_x: item.textPos.x,
-            text_pos_y: item.textPos.y,
-            transform_x: item.transform.x,
-            transform_y: item.transform.y,
-            transform_scale: item.transform.scale,
-            transform_rotate: item.transform.rotate,
-            img_w: item.imgW,
-            img_h: item.imgH,
-            image_data: item.imageData
+            textcolor: item.textColor,
+            outlinecolor: item.outlineColor,
+            bgcolor: item.bgColor,
+            fontfamily: item.fontFamily,
+            useoutline: item.useOutline,
+            outlinewidth: item.outlineWidth,
+            textscale: item.textScale,
+            textposx: item.textPos.x,
+            textposy: item.textPos.y,
+            transformx: item.transform.x,
+            transformy: item.transform.y,
+            transformscale: item.transform.scale,
+            transformrotate: item.transform.rotate,
+            imgw: item.imgW,
+            imgh: item.imgH,
+            imagedata: item.imageData
           };
           
           const { error } = await supabase.from('keychain_items').insert([row]);
@@ -134,19 +134,19 @@ export default function App() {
           id: d.id,
           resi: d.resi,
           name: d.name,
-          textColor: d.text_color,
-          outlineColor: d.outline_color,
-          bgColor: d.bg_color,
-          fontFamily: d.font_family,
-          useOutline: !!d.use_outline,
-          outlineWidth: d.outline_width,
-          textScale: d.text_scale,
-          textPos: { x: d.text_pos_x, y: d.text_pos_y },
-          transform: { x: d.transform_x, y: d.transform_y, scale: d.transform_scale, rotate: d.transform_rotate },
-          imgW: d.img_w,
-          imgH: d.img_h,
-          previewUrl: d.image_data,
-          imageData: d.image_data
+          textColor: d.textcolor,
+          outlineColor: d.outlinecolor,
+          bgColor: d.bgcolor,
+          fontFamily: d.fontfamily,
+          useOutline: !!d.useoutline,
+          outlineWidth: d.outlinewidth,
+          textScale: d.textscale,
+          textPos: { x: d.textposx, y: d.textposy },
+          transform: { x: d.transformx, y: d.transformy, scale: d.transformscale, rotate: d.transformrotate },
+          imgW: d.imgw,
+          imgH: d.imgh,
+          previewUrl: d.imagedata,
+          imageData: d.imagedata
         }));
         setItems(loadedItems);
       }
