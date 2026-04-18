@@ -28,7 +28,7 @@ const ROWS = 5;
 const CANVAS_W = 2563; 
 const CANVAS_H = 3508;
 const UNIT_W = 343;    
-const UNIT_H = 591;    
+const UNIT_H = 532;    
 
 export default function App() {
   const [items, setItems] = useState<KeychainItem[]>([]);
