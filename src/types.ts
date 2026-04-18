@@ -16,6 +16,7 @@ export interface KeychainItem {
   useOutline: boolean;
   outlineWidth: number;
   textScale: number;
+  textRotation: number;
   textPos: { x: number; y: number };
   transform: TransformState;
   imgW: number;

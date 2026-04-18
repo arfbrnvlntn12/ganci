@@ -113,6 +113,7 @@ export default function App() {
             transformrotate: item.transform.rotate,
             imgw: item.imgW,
             imgh: item.imgH,
+            textrotation: item.textRotation || 0,
             imagedata: item.imageData
           };
           
@@ -151,6 +152,7 @@ export default function App() {
           useOutline: !!d.useoutline,
           outlineWidth: d.outlinewidth,
           textScale: d.textscale,
+          textRotation: d.textrotation || 0,
           textPos: { x: d.textposx, y: d.textposy },
           transform: { x: d.transformx, y: d.transformy, scale: d.transformscale, rotate: d.transformrotate },
           imgW: d.imgw,
@@ -413,6 +415,7 @@ export default function App() {
           useOutline: globalUseOutline,
           outlineWidth: globalOutlineWidth,
           textScale: 32,
+          textRotation: 0,
           textPos: { x: 50, y: 90 },
           transform: { x: 0, y: 0, scale: minScale, rotate: 0 }, 
           imgW: img.width,
@@ -542,6 +545,15 @@ export default function App() {
 
   const drawTextOnCanvas = (ctx: CanvasRenderingContext2D, item: KeychainItem, x: number, y: number) => {
     ctx.save();
+    
+    // Apply text rotation around the text position
+    const textRot = item.textRotation || 0;
+    if (textRot !== 0) {
+      ctx.translate(x, y);
+      ctx.rotate(textRot * Math.PI / 180);
+      ctx.translate(-x, -y);
+    }
+    
     let size = item.textScale;
     ctx.font = `900 ${size}px ${item.fontFamily}`;
     ctx.textAlign = "center";
@@ -865,6 +877,29 @@ export default function App() {
                         className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                       />
                     </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase">Kontrol Teks Cepat</label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            const next = ((activeItem.textRotation || 0) + 90) % 360;
+                            updateItem(activeItem.id, { textRotation: next, textPos: { x: 50, y: 50 } });
+                          }}
+                          className="flex-1 flex items-center justify-center gap-1 py-2.5 bg-violet-100 hover:bg-violet-200 text-violet-700 font-black text-[10px] uppercase rounded-xl transition-colors"
+                          title={`Rotasi Teks (saat ini ${activeItem.textRotation || 0}°)`}
+                        >
+                          <RotateCw size={13} /> {activeItem.textRotation || 0}°
+                        </button>
+                        <button
+                          onClick={() => updateItem(activeItem.id, { textRotation: 0, textPos: { x: 50, y: 90 } })}
+                          className="flex-1 flex items-center justify-center gap-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-[10px] uppercase rounded-xl transition-colors"
+                          title="Reset teks ke posisi normal"
+                        >
+                          A↕ Normal
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -1144,6 +1179,7 @@ function UnitCard({
               textTransform: 'uppercase',
               WebkitTextStroke: item.useOutline ? `${(item.outlineWidth * ratio)}px ${item.outlineColor}` : 'none',
               paintOrder: 'stroke fill',
+              transform: `rotate(${item.textRotation || 0}deg)`,
             }}
             onMouseDown={(e) => handleDragStart(e, 'text')}
             onTouchStart={(e) => handleDragStart(e, 'text')}
