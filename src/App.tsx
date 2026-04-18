@@ -138,12 +138,50 @@ export default function App() {
       
       setCurrentProjectId(id);
       const proj = projects.find(p => p.id === id);
-      if (proj) setProjectName(proj.name);
+      if (proj) setProjectName(proj.name.split(' | KCP-')[0]);
       setSelectedId(null);
     } catch(e) {
       console.error(e);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Kode Akses Kilat System
+  const [inputShareCode, setInputShareCode] = useState('');
+
+  const generateShareCode = async () => {
+    if (!currentProjectId) {
+      alert("Simpan proyek ke Cloud Database terlebih dahulu sebelum membagikannya.");
+      return;
+    }
+    const code = "KCP-" + Math.floor(100000 + Math.random() * 900000);
+    const newName = `${projectName.split(' | KCP-')[0]} | ${code}`;
+    
+    setIsLoading(true);
+    setLoadingText('Membuat Kode Akses...');
+    try {
+      const { error } = await supabase.from('projects').update({ name: newName }).eq('id', currentProjectId);
+      if (error) throw error;
+      // Re-fetch project list silently without hiding project name
+      await fetchProjects();
+      alert(`Kode Berhasil Dibuat!\nBeritahu ini ke teman Anda untuk ditarik: ${code}`);
+    } catch (e) {
+      console.error(e);
+      alert("Gagal membuat kode unik.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadFromShareCode = () => {
+    if (!inputShareCode.trim()) return;
+    const target = projects.find(p => p.name.includes(inputShareCode.trim().toUpperCase()));
+    if (target) {
+      loadProject(target.id);
+      setInputShareCode('');
+    } else {
+      alert(`Kode ${inputShareCode} tidak ditemukan di Cloud.`);
     }
   };
   
@@ -527,21 +565,37 @@ export default function App() {
 
         {/* TABS HEADER & DB ACTIONS */}
         <div className="p-4 border-b border-slate-100 flex flex-col gap-3">
-          <div className="flex gap-2 mb-2">
-             <input type="text" value={projectName} onChange={e => setProjectName(e.target.value)} className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1 font-bold" placeholder="Nama Project" />
+          <div className="flex gap-2">
+             <input type="text" value={projectName} onChange={e => setProjectName(e.target.value.split(' | KCP-')[0])} className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1 font-bold w-1/2" placeholder="Nama Project" />
              <select 
-                className="w-1/3 text-xs border border-slate-200 rounded-lg bg-white"
+                className="w-1/2 text-xs border border-slate-200 rounded-lg bg-white px-1"
                 value={currentProjectId || ''}
                 onChange={(e) => {
                     const val = e.target.value;
                     if(val) loadProject(val);
                 }}
              >
-                <option value="">Load...</option>
-                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                <option value="">Load Project...</option>
+                {projects.map(p => <option key={p.id} value={p.id}>{p.name.split(' | KCP-')[0]}</option>)}
              </select>
           </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl">
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              value={inputShareCode} 
+              onChange={e => setInputShareCode(e.target.value.toUpperCase())} 
+              className="flex-1 text-[11px] border border-blue-200 bg-blue-50/50 rounded-lg px-2 py-1.5 font-black uppercase tracking-widest text-center text-blue-900 outline-none focus:border-blue-500 transition-colors placeholder:font-bold placeholder:text-blue-300" 
+              placeholder="KODE: KCP-XXX" 
+            />
+            <button 
+              onClick={loadFromShareCode}
+              disabled={!inputShareCode}
+              className="px-4 bg-indigo-600 text-white hover:bg-slate-900 font-bold rounded-lg text-[10px] uppercase transition-all shadow-sm shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Tarik
+            </button>
+          </div>
+          <div className="flex bg-slate-100 p-1 rounded-xl mt-1">
             <button 
               onClick={() => setActiveTab('massal')}
               className={`flex-1 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all ${activeTab === 'massal' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
@@ -787,6 +841,14 @@ export default function App() {
               className="w-full bg-emerald-600 hover:bg-white hover:text-emerald-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-900/40 uppercase tracking-widest text-[9px] disabled:opacity-20 flex items-center justify-center gap-1"
             >
               <Save size={14} /> Simpan ke Cloud Database
+            </button>
+            <button 
+              disabled={!currentProjectId}
+              onClick={generateShareCode}
+              title={!currentProjectId ? "Simpan proyek ke database dulu" : "Bagikan proyek ini dengan kode unik"}
+              className="w-full bg-orange-500 hover:bg-white hover:text-orange-500 text-white font-black py-3 rounded-xl transition-all shadow-lg shadow-orange-900/40 uppercase tracking-widest text-[9px] disabled:opacity-20 flex items-center justify-center gap-1"
+            >
+              Bagi ke Teman (Kode Akses)
             </button>
           </div>
         </div>
