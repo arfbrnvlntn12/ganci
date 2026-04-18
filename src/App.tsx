@@ -1097,9 +1097,10 @@ function UnitCard({
     >
       <button 
         onClick={(e) => { e.stopPropagation(); onRemove(); }}
-        className="absolute -top-2 -right-2 bg-slate-800 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-50 hover:bg-red-500"
+        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg z-50 transition-transform hover:scale-110"
+        title="Hapus foto ini"
       >
-        <X size={10} strokeWidth={4} />
+        <X size={12} strokeWidth={3} />
       </button>
 
       <div className="flex justify-between items-center mb-0.5">
