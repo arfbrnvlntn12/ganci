@@ -513,7 +513,7 @@ export default function App() {
            let html = `
              <html>
                <head>
-                 <title>Cetak Print-Flow</title>
+                 <title>Cetak Keychain Pro</title>
                  <style>
                     body { margin: 0; padding: 0; background: #fff; }
                     @page { size: A4; margin: 0; }
@@ -607,7 +607,7 @@ export default function App() {
       <aside className="w-[300px] h-screen sticky top-0 bg-white border-r border-slate-200 flex flex-col z-[100] shadow-sm">
         <div className="p-6 flex items-center gap-3 border-b border-slate-50">
           <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold">🖼️</div>
-          <h1 className="text-lg font-extrabold text-slate-800 uppercase tracking-tighter">Print-Flow</h1>
+          <h1 className="text-lg font-extrabold text-slate-800 uppercase tracking-tighter">Keychain Pro</h1>
         </div>
 
         {/* TABS HEADER & DB ACTIONS */}
