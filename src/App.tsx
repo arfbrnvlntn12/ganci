@@ -14,7 +14,8 @@ import {
   Type,
   Layout,
   Plus,
-  Monitor
+  Monitor,
+  RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { KeychainItem, SidebarTab } from './types';
@@ -53,6 +54,15 @@ export default function App() {
     } catch (e) {
       console.error('Failed to fetch projects', e);
     }
+  };
+
+  const resetProject = () => {
+    if (items.length > 0 && !window.confirm('Mulai project baru? Semua data di meja kerja akan dihapus.')) return;
+    setItems([]);
+    setSelectedId(null);
+    setCurrentProjectId(null);
+    setProjectName('New Project');
+    imageCache.current.clear();
   };
 
   const saveToDb = async () => {
@@ -603,9 +613,18 @@ export default function App() {
         {/* TABS HEADER & DB ACTIONS */}
         <div className="p-4 border-b border-slate-100 flex flex-col gap-3">
           <div className="flex gap-2">
-             <input type="text" value={projectName} onChange={e => setProjectName(e.target.value.split(' | KCP-')[0])} className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1 font-bold w-1/2" placeholder="Nama Project" />
+             <input type="text" value={projectName} onChange={e => setProjectName(e.target.value.split(' | KCP-')[0])} className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1 font-bold" placeholder="Nama Project" />
+             <button
+               onClick={resetProject}
+               title="Reset / Mulai Project Baru"
+               className="px-2 bg-red-50 hover:bg-red-500 text-red-400 hover:text-white border border-red-200 hover:border-red-500 rounded-lg transition-all"
+             >
+               <RefreshCw size={14} />
+             </button>
+          </div>
+          <div className="flex gap-2">
              <select 
-                className="w-1/2 text-xs border border-slate-200 rounded-lg bg-white px-1"
+                className="flex-1 text-xs border border-slate-200 rounded-lg bg-white px-1"
                 value={currentProjectId || ''}
                 onChange={(e) => {
                     const val = e.target.value;
@@ -615,6 +634,25 @@ export default function App() {
                 <option value="">Load Project...</option>
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name.split(' | KCP-')[0]}</option>)}
              </select>
+             <button
+               disabled={!currentProjectId}
+               onClick={async () => {
+                 if (!window.confirm('Hapus project ini dari database?')) return;
+                 setIsLoading(true);
+                 setLoadingText('Menghapus project...');
+                 try {
+                   await supabase.from('keychain_items').delete().eq('project_id', currentProjectId);
+                   await supabase.from('projects').delete().eq('id', currentProjectId);
+                   resetProject();
+                   await fetchProjects();
+                 } catch(e) { console.error(e); }
+                 finally { setIsLoading(false); }
+               }}
+               title="Hapus Project dari Database"
+               className="px-2 bg-red-50 hover:bg-red-500 text-red-400 hover:text-white border border-red-200 hover:border-red-500 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+             >
+               <Trash2 size={14} />
+             </button>
           </div>
           <div className="flex gap-2">
             <input 
