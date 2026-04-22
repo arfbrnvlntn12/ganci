@@ -250,6 +250,17 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Guardrails: Format and Size (Max 5MB)
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext !== 'ttf' && ext !== 'otf') {
+      alert("Hanya menerima format .ttf atau .otf saja.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Ukuran font terlalu besar (Maksimal 5MB).");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
@@ -265,12 +276,66 @@ export default function App() {
       `;
       document.head.appendChild(style);
 
-      const newFont = { name: fontName, family: `'${familyName}'`, url: dataUrl };
-      setCustomFonts(prev => [...prev, newFont]);
+      const newFont = { name: fontName.toUpperCase(), family: `'${familyName}'`, url: dataUrl };
+      // Add to TOP of list
+      setCustomFonts(prev => [newFont, ...prev]);
       updateGlobalSettings('font', `'${familyName}'`);
     };
     reader.readAsDataURL(file);
     if (e.target) e.target.value = '';
+  };
+
+  const handleRakitCetak = async () => {
+    if (items.length === 0) return;
+    
+    setIsLoading(true);
+    setLoadingText('Mengirim ke Python Backend...');
+    
+    try {
+      // Prepare data for backend
+      const payload = {
+        projectName,
+        projectId: currentProjectId,
+        items: items.map(item => ({
+          resi: item.resi,
+          name: item.name,
+          textColor: item.textColor,
+          outlineColor: item.outlineColor,
+          bgColor: item.bgColor,
+          fontFamily: item.fontFamily,
+          useOutline: item.useOutline,
+          outlineWidth: item.outlineWidth,
+          textScale: item.textScale,
+          textRotation: item.textRotation,
+          textPos: item.textPos,
+          transform: item.transform,
+          imageData: item.imageData // Base64 of the image
+        })),
+        customFonts: customFonts.map(f => ({
+          name: f.name,
+          family: f.family,
+          data: f.url // Base64 of the font file
+        }))
+      };
+
+      // NOTE: Replace with actual Python backend URL
+      // const response = await fetch('http://YOUR_PYTHON_BACKEND/rakit-cetak', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(payload)
+      // });
+      
+      // if (!response.ok) throw new Error('Gagal mengirim ke backend');
+      
+      console.log("Payload sent to Python:", payload);
+      alert("Data berhasil dikirim ke Sistem Rakit & Cetak (Python)!\n\n(Silahkan cek console log untuk melihat payload yang dikirim)");
+      
+    } catch (e: any) {
+      console.error(e);
+      alert("Error: " + e.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -754,13 +819,7 @@ export default function App() {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-end">
-                    <label className="text-[10px] font-black text-slate-400 uppercase">Gaya Font</label>
-                    <button 
-                      onClick={() => fontInputRef.current?.click()}
-                      className="text-[8px] font-bold text-indigo-500 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-md transition-colors"
-                    >
-                      + FONT SENDIRI
-                    </button>
+                    <label className="text-[10px] font-black text-slate-400 uppercase">Koleksi Font Lucu</label>
                   </div>
                   <select 
                     value={globalFont}
@@ -779,6 +838,14 @@ export default function App() {
                       <option value="'Chewy', cursive">CHEWY (Playful)</option>
                     </optgroup>
                   </select>
+
+                  <button 
+                    onClick={() => fontInputRef.current?.click()}
+                    className="w-full mt-2 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-indigo-600 hover:to-slate-900 text-white font-black rounded-xl transition-all shadow-md shadow-blue-200 uppercase text-[10px] flex items-center justify-center gap-2 group"
+                  >
+                    <Type size={14} className="group-hover:rotate-12 transition-transform" />
+                    ➕ Upload Font Sendiri (.ttf / .otf)
+                  </button>
                 </div>
 
                 <div className="space-y-1">
@@ -839,12 +906,6 @@ export default function App() {
                     <div className="space-y-2">
                       <div className="flex justify-between items-end">
                         <label className="text-[10px] font-black text-slate-400 uppercase">Gaya Font Khusus</label>
-                        <button 
-                          onClick={() => fontInputRef.current?.click()}
-                          className="text-[8px] font-bold text-indigo-500 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-md transition-colors"
-                        >
-                          + UP FONT
-                        </button>
                       </div>
                       <select 
                         value={activeItem.fontFamily}
@@ -863,6 +924,12 @@ export default function App() {
                           <option value="'Chewy', cursive">CHEWY</option>
                         </optgroup>
                       </select>
+                      <button 
+                        onClick={() => fontInputRef.current?.click()}
+                        className="w-full mt-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg transition-all text-[9px] uppercase flex items-center justify-center gap-2"
+                      >
+                        ➕ UP FONT BARU
+                      </button>
                     </div>
 
                     <div className="space-y-1">
@@ -959,6 +1026,14 @@ export default function App() {
               className="w-full bg-orange-500 hover:bg-white hover:text-orange-500 text-white font-black py-3 rounded-xl transition-all shadow-lg shadow-orange-900/40 uppercase tracking-widest text-[9px] disabled:opacity-20 flex items-center justify-center gap-1"
             >
               Bagi ke Teman (Kode Akses)
+            </button>
+            <button 
+              disabled={items.length === 0}
+              onClick={handleRakitCetak}
+              className="w-full bg-gradient-to-r from-red-600 to-rose-700 hover:from-rose-700 hover:to-slate-900 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-rose-900/40 uppercase tracking-widest text-[11px] disabled:opacity-20 flex items-center justify-center gap-2 mt-2 group"
+            >
+              <Layout size={16} className="group-hover:animate-pulse" />
+              Rakit & Cetak (Python)
             </button>
           </div>
         </div>
