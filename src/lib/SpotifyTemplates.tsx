@@ -46,11 +46,12 @@ export const drawSpotifyTemplateOnCanvas = (
   // 2. Draw Main Photo
   ctx.save();
   if (t === 'cinematic') {
-    // rounded photo in middle
-    const pw = UNIT_W - 48; // 295
-    const ph = pw; // 295
-    const px = 24;
-    const py = 35;
+    // exact identical layout padding
+    const margin = 20;
+    const pw = UNIT_W - (margin * 2); 
+    const ph = pw; 
+    const px = margin;
+    const py = margin;
     
     ctx.beginPath();
     ctx.roundRect(px, py, pw, ph, 15);
@@ -116,11 +117,12 @@ export const drawSpotifyTemplateOnCanvas = (
 
   // 3. Draw Overlay Elements (Text, Icons)
   if (t === 'cinematic') {
+    const margin = 20;
     // 1. Background Overlay (dark gradient over the blurred photo)
     ctx.save();
     const grad = ctx.createLinearGradient(0, 0, 0, UNIT_H);
-    grad.addColorStop(0, 'rgba(0,0,0,0.2)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.6)');
+    grad.addColorStop(0, 'rgba(0,0,0,0.3)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.8)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, UNIT_W, UNIT_H);
     ctx.restore();
@@ -132,74 +134,75 @@ export const drawSpotifyTemplateOnCanvas = (
     // iPhone text
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = `12px ${item.fontFamily}`;
-    ctx.fillText('iPhone', 25, 345);
+    ctx.fillText('iPhone', margin, 345);
 
     // AirPlay Icon
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(UNIT_W - 35, 355, 10, Math.PI, 0); ctx.stroke();
-    ctx.beginPath(); ctx.arc(UNIT_W - 35, 355, 6, Math.PI, 0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(UNIT_W - margin - 10, 355, 10, Math.PI, 0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(UNIT_W - margin - 10, 355, 6, Math.PI, 0); ctx.stroke();
     ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.moveTo(UNIT_W - 35, 350); ctx.lineTo(UNIT_W - 28, 360); ctx.lineTo(UNIT_W - 42, 360); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(UNIT_W - margin - 10, 350); ctx.lineTo(UNIT_W - margin - 4, 360); ctx.lineTo(UNIT_W - margin - 16, 360); ctx.fill();
 
     // Song Title
-    ctx.font = `bold 22px ${item.fontFamily}`;
-    ctx.fillText(item.songTitle || 'NANTI KITA SEPERTI INI', 25, 365);
+    ctx.font = `bold 24px ${item.fontFamily}`;
+    ctx.fillText(item.songTitle || 'NANTI KITA SEPERTI INI', margin, 370);
     
     // Artist
     ctx.font = `italic 18px ${item.fontFamily}`;
-    ctx.fillText(item.artistName || 'Batas Senja', 25, 395);
+    ctx.fillText(item.artistName || 'Batas Senja', margin, 400);
     
     // progress bar
-    const barY = 430;
+    const barY = 440;
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.fillRect(25, barY, UNIT_W - 50, 4);
+    ctx.fillRect(margin, barY, UNIT_W - (margin * 2), 4);
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(25, barY, (UNIT_W - 50) * 0.3, 4);
+    ctx.fillRect(margin, barY, (UNIT_W - (margin * 2)) * 0.3, 4);
     ctx.beginPath();
-    ctx.arc(25 + (UNIT_W - 50) * 0.3, barY + 2, 6, 0, Math.PI * 2);
+    ctx.arc(margin + (UNIT_W - (margin * 2)) * 0.3, barY + 2, 6, 0, Math.PI * 2);
     ctx.fill();
     
     // Times
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
     ctx.font = `11px ${item.fontFamily}`;
-    ctx.fillText('1:27', 25, 445);
+    ctx.fillText('1:27', margin, 452);
     ctx.textAlign = 'right';
-    ctx.fillText('-3:22', UNIT_W - 25, 445);
+    ctx.fillText('-3:22', UNIT_W - margin, 452);
     ctx.textAlign = 'left';
     
     // controls (Pause, Prev, Next)
     ctx.fillStyle = '#ffffff';
+    const cy = 495;
     // Pause
-    ctx.beginPath(); ctx.roundRect(UNIT_W/2 - 12, 475, 8, 25, 2); ctx.fill();
-    ctx.beginPath(); ctx.roundRect(UNIT_W/2 + 4, 475, 8, 25, 2); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(UNIT_W/2 - 14, cy - 15, 10, 30, 2); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(UNIT_W/2 + 4, cy - 15, 10, 30, 2); ctx.fill();
     // Prev
-    ctx.beginPath(); ctx.moveTo(UNIT_W/2 - 35, 487.5); ctx.lineTo(UNIT_W/2 - 20, 475); ctx.lineTo(UNIT_W/2 - 20, 500); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(UNIT_W/2 - 50, 487.5); ctx.lineTo(UNIT_W/2 - 35, 475); ctx.lineTo(UNIT_W/2 - 35, 500); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(UNIT_W/2 - 40, cy); ctx.lineTo(UNIT_W/2 - 20, cy - 12); ctx.lineTo(UNIT_W/2 - 20, cy + 12); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(UNIT_W/2 - 60, cy); ctx.lineTo(UNIT_W/2 - 40, cy - 12); ctx.lineTo(UNIT_W/2 - 40, cy + 12); ctx.fill();
     // Next
-    ctx.beginPath(); ctx.moveTo(UNIT_W/2 + 35, 487.5); ctx.lineTo(UNIT_W/2 + 20, 475); ctx.lineTo(UNIT_W/2 + 20, 500); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(UNIT_W/2 + 50, 487.5); ctx.lineTo(UNIT_W/2 + 35, 475); ctx.lineTo(UNIT_W/2 + 35, 500); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(UNIT_W/2 + 40, cy); ctx.lineTo(UNIT_W/2 + 20, cy - 12); ctx.lineTo(UNIT_W/2 + 20, cy + 12); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(UNIT_W/2 + 60, cy); ctx.lineTo(UNIT_W/2 + 40, cy - 12); ctx.lineTo(UNIT_W/2 + 40, cy + 12); ctx.fill();
     
     // Volume slider
-    const volY = 535;
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.fillRect(60, volY, UNIT_W - 120, 3);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(60, volY, (UNIT_W - 120) * 0.7, 3);
-    ctx.beginPath();
-    ctx.arc(60 + (UNIT_W - 120) * 0.7, volY + 1.5, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Vol low icon
+    const volY = 550;
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.beginPath(); ctx.moveTo(40, volY - 2); ctx.lineTo(44, volY - 2); ctx.lineTo(48, volY - 5); ctx.lineTo(48, volY + 8); ctx.lineTo(44, volY + 5); ctx.lineTo(40, volY + 5); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(margin + 4, volY - 3); ctx.lineTo(margin + 8, volY - 3); ctx.lineTo(margin + 12, volY - 7); ctx.lineTo(margin + 12, volY + 9); ctx.lineTo(margin + 8, volY + 5); ctx.lineTo(margin + 4, volY + 5); ctx.fill();
     
-    // Vol high icon
-    ctx.beginPath(); ctx.moveTo(UNIT_W - 52, volY - 2); ctx.lineTo(UNIT_W - 48, volY - 2); ctx.lineTo(UNIT_W - 44, volY - 5); ctx.lineTo(UNIT_W - 44, volY + 8); ctx.lineTo(UNIT_W - 48, volY + 5); ctx.lineTo(UNIT_W - 52, volY + 5); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(UNIT_W - margin - 20, volY - 3); ctx.lineTo(UNIT_W - margin - 16, volY - 3); ctx.lineTo(UNIT_W - margin - 12, volY - 7); ctx.lineTo(UNIT_W - margin - 12, volY + 9); ctx.lineTo(UNIT_W - margin - 16, volY + 5); ctx.lineTo(UNIT_W - margin - 20, volY + 5); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
     ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(UNIT_W - 44, volY + 1.5, 4, -Math.PI/3, Math.PI/3); ctx.stroke();
-    ctx.beginPath(); ctx.arc(UNIT_W - 44, volY + 1.5, 7, -Math.PI/3, Math.PI/3); ctx.stroke();
+    ctx.beginPath(); ctx.arc(UNIT_W - margin - 12, volY + 1, 5, -Math.PI/3, Math.PI/3); ctx.stroke();
+    ctx.beginPath(); ctx.arc(UNIT_W - margin - 12, volY + 1, 9, -Math.PI/3, Math.PI/3); ctx.stroke();
+    
+    const sLeft = margin + 25;
+    const sWidth = UNIT_W - (margin * 2) - 55;
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(sLeft, volY, sWidth, 3);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(sLeft, volY, sWidth * 0.7, 3);
+    ctx.beginPath();
+    ctx.arc(sLeft + sWidth * 0.7, volY + 1.5, 8, 0, Math.PI * 2);
+    ctx.fill();
   } else if (t === 'classic') {
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'left';
@@ -358,59 +361,59 @@ export const SpotifyTemplatePreview: React.FC<{ item: KeychainItem, ratio: numbe
       {/* Cinematic Variant */}
       {t === 'cinematic' && (
         <>
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)', zIndex: 1 }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%)', zIndex: 1 }} />
           <div className="w-full h-full text-white text-left relative" style={{ fontFamily: item.fontFamily, zIndex: 2 }}>
             
-            <div style={{ position: 'absolute', left: 25 * ratio, top: 345 * ratio, fontSize: 12 * ratio, color: 'rgba(255,255,255,0.7)' }}>
+            <div style={{ position: 'absolute', left: 20 * ratio, top: 345 * ratio, fontSize: 12 * ratio, color: 'rgba(255,255,255,0.7)' }}>
               iPhone
             </div>
 
-            <svg style={{ position: 'absolute', right: 28 * ratio, top: 345 * ratio }} width={16*ratio} height={16*ratio} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg style={{ position: 'absolute', right: 20 * ratio, top: 345 * ratio }} width={20*ratio} height={20*ratio} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 21L17 14H7L12 21Z" fill="currentColor" stroke="none" />
               <path d="M12 4C15.866 4 19 7.13401 19 11" stroke="currentColor" />
               <path d="M12 7C14.2091 7 16 8.79086 16 11" stroke="currentColor" />
             </svg>
 
-            <h3 style={{ position: 'absolute', left: 25 * ratio, top: 365 * ratio, fontSize: 22 * ratio, fontWeight: 'bold', margin: 0, lineHeight: 1 }}>
+            <h3 style={{ position: 'absolute', left: 20 * ratio, top: 370 * ratio, fontSize: 24 * ratio, fontWeight: 'bold', margin: 0, lineHeight: 1 }}>
               {item.songTitle || 'NANTI KITA SEPERTI INI'}
             </h3>
 
-            <p style={{ position: 'absolute', left: 25 * ratio, top: 395 * ratio, fontSize: 18 * ratio, fontStyle: 'italic', margin: 0, color: 'rgba(255,255,255,0.8)' }}>
+            <p style={{ position: 'absolute', left: 20 * ratio, top: 400 * ratio, fontSize: 18 * ratio, fontStyle: 'italic', margin: 0, color: 'rgba(255,255,255,0.8)' }}>
               {item.artistName || 'Batas Senja'}
             </p>
 
             {/* Progress bar */}
-            <div style={{ position: 'absolute', left: 25 * ratio, top: 430 * ratio, width: (UNIT_W - 50) * ratio, height: 4 * ratio, background: 'rgba(255,255,255,0.3)', borderRadius: 2 * ratio }}>
+            <div style={{ position: 'absolute', left: 20 * ratio, top: 440 * ratio, width: (UNIT_W - 40) * ratio, height: 4 * ratio, background: 'rgba(255,255,255,0.3)', borderRadius: 2 * ratio }}>
               <div style={{ width: '30%', height: '100%', background: '#fff', borderRadius: 2 * ratio, position: 'relative' }}>
                  <div style={{ position: 'absolute', right: -3*ratio, top: -1*ratio, width: 6*ratio, height: 6*ratio, background: '#fff', borderRadius: '50%' }} />
               </div>
             </div>
 
             {/* Times */}
-            <div style={{ position: 'absolute', left: 25 * ratio, top: 445 * ratio, fontSize: 11 * ratio, color: 'rgba(255,255,255,0.6)' }}>1:27</div>
-            <div style={{ position: 'absolute', right: 25 * ratio, top: 445 * ratio, fontSize: 11 * ratio, color: 'rgba(255,255,255,0.6)' }}>-3:22</div>
+            <div style={{ position: 'absolute', left: 20 * ratio, top: 452 * ratio, fontSize: 11 * ratio, color: 'rgba(255,255,255,0.6)' }}>1:27</div>
+            <div style={{ position: 'absolute', right: 20 * ratio, top: 452 * ratio, fontSize: 11 * ratio, color: 'rgba(255,255,255,0.6)' }}>-3:22</div>
 
             {/* Controls */}
-            <div style={{ position: 'absolute', top: 475 * ratio, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 30 * ratio }}>
+            <div style={{ position: 'absolute', top: 480 * ratio, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 40 * ratio }}>
               {/* Prev */}
-              <div className="flex" style={{ transform: 'scale(1.2)' }}>
+              <div className="flex" style={{ transform: 'scale(1.5)' }}>
                  <div style={{ width: 0, height: 0, borderTop: `${6*ratio}px solid transparent`, borderBottom: `${6*ratio}px solid transparent`, borderRight: `${10*ratio}px solid #fff` }} />
                  <div style={{ width: 0, height: 0, borderTop: `${6*ratio}px solid transparent`, borderBottom: `${6*ratio}px solid transparent`, borderRight: `${10*ratio}px solid #fff` }} />
               </div>
               {/* Pause */}
-              <div style={{ width: 14 * ratio, height: 25 * ratio, display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ width: 14 * ratio, height: 30 * ratio, display: 'flex', justifyContent: 'space-between' }}>
                  <div style={{ width: 5*ratio, background: '#fff', borderRadius: 2*ratio }} />
                  <div style={{ width: 5*ratio, background: '#fff', borderRadius: 2*ratio }} />
               </div>
               {/* Next */}
-              <div className="flex" style={{ transform: 'scale(1.2)' }}>
+              <div className="flex" style={{ transform: 'scale(1.5)' }}>
                  <div style={{ width: 0, height: 0, borderTop: `${6*ratio}px solid transparent`, borderBottom: `${6*ratio}px solid transparent`, borderLeft: `${10*ratio}px solid #fff` }} />
                  <div style={{ width: 0, height: 0, borderTop: `${6*ratio}px solid transparent`, borderBottom: `${6*ratio}px solid transparent`, borderLeft: `${10*ratio}px solid #fff` }} />
               </div>
             </div>
 
             {/* Volume */}
-            <div style={{ position: 'absolute', top: 535 * ratio, left: 40 * ratio, right: 40 * ratio, display: 'flex', alignItems: 'center', gap: 8 * ratio }}>
+            <div style={{ position: 'absolute', top: 546 * ratio, left: 24 * ratio, right: 30 * ratio, display: 'flex', alignItems: 'center', gap: 10 * ratio }}>
               <svg width={14*ratio} height={14*ratio} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity: 0.5}}>
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"></polygon>
               </svg>
@@ -419,7 +422,7 @@ export const SpotifyTemplatePreview: React.FC<{ item: KeychainItem, ratio: numbe
                    <div style={{ position: 'absolute', right: -4*ratio, top: -2.5*ratio, width: 8*ratio, height: 8*ratio, background: '#fff', borderRadius: '50%' }} />
                 </div>
               </div>
-              <svg width={16*ratio} height={16*ratio} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity: 0.5}}>
+              <svg width={18*ratio} height={18*ratio} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{opacity: 0.5}}>
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"></polygon>
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>

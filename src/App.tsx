@@ -1320,7 +1320,7 @@ function UnitCard({
         <div style={{
           position: 'absolute',
           inset: 0,
-          clipPath: item.template === 'cinematic' ? `inset(${35*ratio}px ${24*ratio}px ${245*ratio}px ${24*ratio}px round ${15*ratio}px)` : 
+          clipPath: item.template === 'cinematic' ? `inset(${20*ratio}px ${20*ratio}px ${252*ratio}px ${20*ratio}px round ${15*ratio}px)` : 
                     item.template === 'classic' ? 'inset(5% 5% 45% 5%)' : 
                     item.template === 'vibrant' ? 'inset(0% 0% 35% 0%)' :
                     item.template === 'curator' ? 'inset(10% 55% 65% 5%)' : 'none'
