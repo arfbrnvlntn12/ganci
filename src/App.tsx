@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { KeychainItem, SidebarTab } from './types';
 import { supabase } from './lib/supabase';
+import { drawSpotifyTemplateOnCanvas, SpotifyTemplatePreview } from './lib/SpotifyTemplates';
 
 // Constants for 300 DPI A4
 const SLOTS_PER_PAGE = 35;
@@ -241,6 +242,11 @@ export default function App() {
   const [globalFont, setGlobalFont] = useState("'Fredoka', sans-serif");
   const [globalUseOutline, setGlobalUseOutline] = useState(true);
   const [globalOutlineWidth, setGlobalOutlineWidth] = useState(8);
+  
+  // Spotify Globals
+  const [globalTemplate, setGlobalTemplate] = useState<'default'|'cinematic'|'classic'|'curator'|'vibrant'>('default');
+  const [globalArtist, setGlobalArtist] = useState('Artist Name');
+  const [globalSong, setGlobalSong] = useState('SONG TITLE');
 
   // Custom Fonts State
   const [customFonts, setCustomFonts] = useState<{name: string, family: string, url: string}[]>([]);
@@ -361,6 +367,9 @@ export default function App() {
     if (field === 'font') setGlobalFont(value);
     if (field === 'useOutline') setGlobalUseOutline(value);
     if (field === 'outlineWidth') setGlobalOutlineWidth(value);
+    if (field === 'template') setGlobalTemplate(value);
+    if (field === 'artistName') setGlobalArtist(value);
+    if (field === 'songTitle') setGlobalSong(value);
 
     // Apply to all items if in Massal mode
     setItems(prev => prev.map(item => {
@@ -370,7 +379,10 @@ export default function App() {
         bgColor: 'bgColor',
         font: 'fontFamily',
         useOutline: 'useOutline',
-        outlineWidth: 'outlineWidth'
+        outlineWidth: 'outlineWidth',
+        template: 'template',
+        artistName: 'artistName',
+        songTitle: 'songTitle'
       };
       const itemField = fieldMap[field];
       return { ...item, [itemField]: value };
@@ -484,7 +496,10 @@ export default function App() {
           textPos: { x: 50, y: 90 },
           transform: { x: 0, y: 0, scale: minScale, rotate: 0 }, 
           imgW: img.width,
-          imgH: img.height
+          imgH: img.height,
+          template: globalTemplate,
+          artistName: globalArtist,
+          songTitle: globalSong
         });
       }
     }
@@ -542,21 +557,25 @@ export default function App() {
           ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 5;
           ctx.strokeRect(curX, curY, UNIT_W, UNIT_H);
 
-          // Background
-          ctx.beginPath(); ctx.rect(curX, curY, UNIT_W, UNIT_H); ctx.clip();
-          ctx.fillStyle = item.bgColor;
-          ctx.fillRect(curX, curY, UNIT_W, UNIT_H);
+          if (item.template && item.template !== 'default') {
+             drawSpotifyTemplateOnCanvas(ctx, item, curX, curY, UNIT_W, UNIT_H, img);
+          } else {
+             // Background
+             ctx.beginPath(); ctx.rect(curX, curY, UNIT_W, UNIT_H); ctx.clip();
+             ctx.fillStyle = item.bgColor;
+             ctx.fillRect(curX, curY, UNIT_W, UNIT_H);
 
-          // Photo Transform
-          ctx.translate(curX + UNIT_W/2, curY + UNIT_H/2);
-          ctx.translate(item.transform.x, item.transform.y);
-          ctx.rotate(item.transform.rotate * Math.PI / 180);
-          ctx.scale(item.transform.scale, item.transform.scale);
-          ctx.drawImage(img, -item.imgW/2, -item.imgH/2, item.imgW, item.imgH);
-          ctx.restore();
+             // Photo Transform
+             ctx.translate(curX + UNIT_W/2, curY + UNIT_H/2);
+             ctx.translate(item.transform.x, item.transform.y);
+             ctx.rotate(item.transform.rotate * Math.PI / 180);
+             ctx.scale(item.transform.scale, item.transform.scale);
+             ctx.drawImage(img, -item.imgW/2, -item.imgH/2, item.imgW, item.imgH);
+             ctx.restore();
+          }
 
           // Text Overlay
-          if (item.name) {
+          if (item.name && (!item.template || item.template === 'default')) {
             const tx = curX + (UNIT_W * (item.textPos.x / 100));
             const ty = curY + (UNIT_H * (item.textPos.y / 100));
             drawTextOnCanvas(ctx, item, tx, ty);
@@ -860,6 +879,40 @@ export default function App() {
                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
                 </div>
+
+                {/* Spotify Template Control */}
+                <div className="space-y-2 mt-4 border-t border-slate-200 pt-4">
+                  <label className="text-[10px] font-black text-slate-400 uppercase">Pilih Template Spesial</label>
+                  <select 
+                    value={globalTemplate}
+                    onChange={(e) => updateGlobalSettings('template', e.target.value)}
+                    className="w-full h-12 rounded-2xl border-2 border-green-500 px-4 text-[11px] font-black outline-none bg-green-50 text-green-700 shadow-sm appearance-none"
+                  >
+                    <option value="default">Default (Teks Bebas)</option>
+                    <option value="cinematic">Spotify: Cinematic iOS (Blur BG)</option>
+                    <option value="classic">Spotify: Classic White</option>
+                    <option value="curator">Spotify: Playlist Curator</option>
+                    <option value="vibrant">Spotify: Vibrant Solid</option>
+                  </select>
+                </div>
+                {globalTemplate !== 'default' && (
+                  <div className="space-y-2">
+                    <input 
+                      type="text" 
+                      placeholder="NAMA ARTIS"
+                      value={globalArtist}
+                      onChange={(e) => updateGlobalSettings('artistName', e.target.value)}
+                      className="w-full h-10 px-4 bg-white rounded-xl border border-slate-200 text-xs font-bold"
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="JUDUL LAGU"
+                      value={globalSong}
+                      onChange={(e) => updateGlobalSettings('songTitle', e.target.value)}
+                      className="w-full h-10 px-4 bg-white rounded-xl border border-slate-200 text-xs font-bold"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -967,6 +1020,39 @@ export default function App() {
                         </button>
                       </div>
                     </div>
+
+                    <div className="space-y-2 border-t border-slate-200 pt-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase">Pilih Template Spesial</label>
+                      <select 
+                        value={activeItem.template || 'default'}
+                        onChange={(e) => updateItem(activeItem.id, { template: e.target.value as any })}
+                        className="w-full h-12 rounded-2xl border-2 border-green-500 px-4 text-[11px] font-black outline-none bg-green-50 text-green-700 shadow-sm appearance-none"
+                      >
+                        <option value="default">Default (Teks Bebas)</option>
+                        <option value="cinematic">Spotify: Cinematic iOS (Blur BG)</option>
+                        <option value="classic">Spotify: Classic White</option>
+                        <option value="curator">Spotify: Playlist Curator</option>
+                        <option value="vibrant">Spotify: Vibrant Solid</option>
+                      </select>
+                    </div>
+                    {(activeItem.template && activeItem.template !== 'default') && (
+                      <div className="space-y-2">
+                        <input 
+                          type="text" 
+                          placeholder="NAMA ARTIS"
+                          value={activeItem.artistName || ''}
+                          onChange={(e) => updateItem(activeItem.id, { artistName: e.target.value })}
+                          className="w-full h-10 px-4 bg-white rounded-xl border border-slate-200 text-xs font-bold"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="JUDUL LAGU"
+                          value={activeItem.songTitle || ''}
+                          onChange={(e) => updateItem(activeItem.id, { songTitle: e.target.value })}
+                          className="w-full h-10 px-4 bg-white rounded-xl border border-slate-200 text-xs font-bold"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -1224,25 +1310,49 @@ function UnitCard({
       <div 
         ref={vfRef}
         className={`unit-viewfinder ${isSelected ? 'selected' : ''}`}
-        style={{ backgroundColor: item.bgColor }}
+        style={{ 
+          backgroundColor: item.bgColor,
+          overflow: 'hidden'
+        }}
         onMouseDown={(e) => handleDragStart(e, 'photo')}
         onTouchStart={(e) => handleDragStart(e, 'photo')}
       >
-        <motion.img 
-          src={item.previewUrl} 
-          draggable={false}
-          className="unit-photo"
-          style={{
-            width: item.imgW,
-            height: item.imgH,
-            x: `calc(-50% + ${item.transform.x * ratio}px)`,
-            y: `calc(-50% + ${item.transform.y * ratio}px)`,
-            scale: item.transform.scale * ratio,
-            rotate: item.transform.rotate
-          }}
-        />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          clipPath: item.template === 'cinematic' ? `inset(${35*ratio}px ${24*ratio}px ${245*ratio}px ${24*ratio}px round ${15*ratio}px)` : 
+                    item.template === 'classic' ? 'inset(5% 5% 45% 5%)' : 
+                    item.template === 'vibrant' ? 'inset(0% 0% 35% 0%)' :
+                    item.template === 'curator' ? 'inset(10% 55% 65% 5%)' : 'none'
+        }}>
+           <motion.img 
+            src={item.previewUrl} 
+            draggable={false}
+            className="unit-photo"
+            style={{
+              width: item.imgW,
+              height: item.imgH,
+              x: `calc(-50% + ${item.transform.x * ratio}px)`,
+              y: `calc(-50% + ${item.transform.y * ratio}px)`,
+              scale: item.transform.scale * ratio,
+              rotate: item.transform.rotate
+            }}
+          />
+        </div>
         
-        {item.name && (
+        {item.template === 'cinematic' && (
+          <img src={item.previewUrl} style={{ position: 'absolute', inset: -10, width: '120%', height: '120%', objectFit: 'cover', filter: 'blur(10px) brightness(0.8)', zIndex: -1 }} />
+        )}
+        {item.template === 'classic' && (
+          <div style={{ position: 'absolute', inset: 0, background: '#fff', zIndex: -1 }} />
+        )}
+        {item.template === 'curator' && (
+          <div style={{ position: 'absolute', inset: 0, background: '#000', zIndex: -1 }} />
+        )}
+
+        <SpotifyTemplatePreview item={item} ratio={ratio} imgRef={null} />
+
+        {item.name && (!item.template || item.template === 'default') && (
           <div 
             className="text-preview pointer-events-auto"
             style={{

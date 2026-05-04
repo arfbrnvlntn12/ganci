@@ -24,6 +24,11 @@ export interface KeychainItem {
   previewUrl: string;
   file?: File;
   imageData?: string;
+  template?: 'default' | 'cinematic' | 'classic' | 'curator' | 'vibrant';
+  artistName?: string;
+  songTitle?: string;
+  spotifyCodeStr?: string;
+  canvasExtender?: boolean;
 }
 
 export type SidebarTab = 'massal' | 'individu';
